@@ -1,10 +1,10 @@
 /*
  Version
- 1.00 2026/01/10 初版作成
+ 1.00 2026/01/17 初版作成
  */
 /*:ja
  * @target MZ
- * @plugindesc ループなしBGM再生プラグイン
+ * @plugindesc ループなしBGM演奏プラグイン
  * @orderAfter PluginCommonBase
  * @author あさぎすおう
  *
@@ -12,17 +12,17 @@
  * Ver : 1.00
  * License : MIT license
  * 
- * BGMをループなし指定で再生できるプラグインです。
+ * BGMをループなし指定で演奏できるプラグインです。
  * 方法は以下の２つです。
- * ・プラグインコマンドから『ループなしBGM再生』を選択する。
- * ・『ループなしBGMスイッチ』を設定し、そのスイッチをONにしてからBGMを再生する。
+ * ・プラグインコマンドから『ループなしBGM演奏』を選択する。
+ * ・『ループなしBGMスイッチ』を設定し、そのスイッチをONにしてからBGMを演奏する。
  * 
  * また、プラグインコマンドの『演奏中BGMのループ仕様変更』では、現在流れているBGMの
  * ループ仕様を途中で変更することができます。
  * 
  * 【注意１】
  * 『ループありBGM』と『ループなしBGM』は別の曲として判定します。そのため、
- * 『ループあり』の演奏途中で『ループなし』の再生を実行すると、同じ曲でも最初からBGMが流れます。
+ * 『ループあり』の演奏途中で『ループなし』の演奏を実行すると、同じ曲でも最初からBGMが流れます。
  * 演奏中にループ仕様を変更したい場合は『演奏中BGMのループ仕様変更』を使用してください。
  * 
  * 【注意２】
@@ -34,19 +34,19 @@
  * 
  * @param NotLoopSwitch
  * @text ループなしBGMスイッチ
- * @desc このスイッチがONのときにBGMを再生すると、そのBGMはループしません。
+ * @desc このスイッチがONのときにBGMを演奏すると、そのBGMはループしません。
  * @type switch
  * @default 0
  * 
  * @param SettingToResetNotLoopSwitch
  * @text スイッチのリセット設定
- * @desc この設定をONにすると、BGM再生実行後に『ループなしBGMスイッチ』を自動でOFFにします。
+ * @desc この設定をONにすると、BGM演奏実行後に『ループなしBGMスイッチ』を自動でOFFにします。
  * @type boolean
  * @default false
  * 
  * @command PlayBgmNotLoop
- * @text ループなしBGM再生
- * @desc 指定したBGMをループ仕様なしで再生します。
+ * @text ループなしBGM演奏
+ * @desc 指定したBGMをループ仕様なしで演奏します。
  *
  * @arg FilePath
  * @text ファイルパス
