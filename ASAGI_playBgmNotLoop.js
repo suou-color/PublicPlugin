@@ -210,7 +210,6 @@
     //=============================================================================
     const _AudioManager_playBgm = AudioManager.playBgm;
     AudioManager.playBgm = function(bgm, pos) {
-        console.log($gameSwitches.value(param.NotLoopSwitch));
         if(!$gameSwitches.value(param.NotLoopSwitch)){
             _AudioManager_playBgm.apply(this, arguments);
         }else{
