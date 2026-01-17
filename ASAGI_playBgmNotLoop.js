@@ -4,8 +4,8 @@
  */
 /*:ja
  * @target MZ
- * @base PluginCommonBase
  * @plugindesc ループなしBGM再生プラグイン
+ * @orderAfter PluginCommonBase
  * @author あさぎすおう
  *
  * @help ASAGI_playBgmNotLoop.js
@@ -26,7 +26,11 @@
  * 演奏中にループ仕様を変更したい場合は『演奏中BGMのループ仕様変更』を使用してください。
  * 
  * 【注意２】
- * このプラグインの利用にはトリアコンタン様のベースプラグイン『PluginCommonBase.js』が必要です。
+ * 『演奏中BGMのループ仕様変更』は演奏開始直後では反映されないことがあります。
+ * 目安として演奏開始から10フレーム以上たってから使用するようにしてください。
+ * 
+ * 【補足】
+ * トリアコンタン様のベースプラグイン『PluginCommonBase.js』があると"\V[1]"などの変数が使えます。
  * 
  * @param NotLoopSwitch
  * @text ループなしBGMスイッチ
@@ -88,28 +92,125 @@
  * @on ループあり
  * @off ループなし
  */
+/*:
+ * @target MZ
+ * @plugindesc No-Loop BGM Plugin
+ * @orderAfter PluginCommonBase
+ * @author Asagi Suou
+ *
+ * @help ASAGI_playBgmNotLoop.js
+ * Ver : 1.00
+ * License : MIT license
+ * 
+ * This plugin allows you to play BGM without looping.
+ * There are two methods:
+ * ・Select ‘No-Loop BGM Play’ from the plugin commands.
+ * ・Set up ‘No-Loop BGM Switch’, turn it ON, then play the BGM.
+ * 
+ * The plugin command “Change Loop Setting” allows you to modify the loop settings of the currently playing BGM.
+ * 
+ * 【Caution.1】
+ * “Loop BGM” and “No-Loop BGM” are treated as separate songs.
+ * Therefore, if you start playing a “No-Loop BGM”  song while a “Loop BGM” song is playing,
+ * the BGM will start over from the beginning even if it's the same song.
+ * In such cases, please use the plugin command “Change Loop Setting”.
+ * 
+ * 【Caution.2】
+ * The plugin command “Change Loop Setting” may not take effect immediately after starting playback.
+ * We recommend using this after at least 10 frames have passed since starting playback.
+ * 
+ * 【Memo】
+ * If you have triacontane's base plugin "PluginCommonBase.js", variables like '\V[1]' can be used.
+ * 
+ * @param NotLoopSwitch
+ * @text No-Loop BGM Switch
+ * @desc After turning this switch ON, the BGM will not loop when played.
+ * @type switch
+ * @default 0
+ * 
+ * @param SettingToResetNotLoopSwitch
+ * @text No-Loop Switch Reset Setting
+ * @desc ‘No-Loop BGM Switch’ will automatically turn OFF after BGM starting playback.
+ * @type boolean
+ * @default false
+ * 
+ * @command PlayBgmNotLoop
+ * @text No-Loop BGM Play
+ * @desc Plays the specified BGM without looping.
+ *
+ * @arg FilePath
+ * @desc Specify the BGM file.
+ * @default
+ * @require 1
+ * @dir audio/bgm/
+ * @type file
+ * 
+ * @arg Volume
+ * @default 90
+ * @type number
+ * @min 0
+ * @max 100
+ *
+ * @arg Pitch
+ * @default 100
+ * @type number
+ * @min 50
+ * @max 150
+ *
+ * @arg Pan
+ * @default 0
+ * @type number
+ * @min -100
+ * @max 100
+ * 
+ * @command SetBgmLoop
+ * @text Change Loop Setting
+ * @desc Change the loop settings for the currently playing BGM.
+ * 
+ * @arg Loop
+ * @desc If the current position is behind the loop range, you cannot change the settings.
+ * @type boolean
+ * @default true
+ * @on Loop
+ * @off No-Loop
+ */
 (() => {
     'use strict';
+    const pluginName = "ASAGI_playBgmNotLoop";
+    const includesBase = PluginManager._scripts.includes("PluginCommonBase");
     const script = document.currentScript;
-    console.log(PluginManager.parameters("ASAGI_playBgmNotLoop"));
-    const param  = PluginManagerEx.createParameter(script);
-    //const paramText = PluginManager.parameters(this.findPluginName(script));
-    //console.log(paramText);
+
     //=============================================================================
-    // プラグインコマンド
+    // definition
     //=============================================================================
-    PluginManagerEx.registerCommand(script, 'PlayBgmNotLoop', function(args) {
-        const param = {name: args.FilePath, volume: args.Volume, pitch: args.Pitch, pan: args.Pan};
-        AudioManager.playBgmNotLoop(param);
+    const param = includesBase ? PluginManagerEx.createParameter(script) : PluginManager.parameters(pluginName);
+    const pluginRegisterCommand = function(commandName, func){
+        if(includesBase){
+            PluginManagerEx.registerCommand(script, commandName, func);
+        }else if(PluginManager.registerCommand){
+            PluginManager.registerCommand(pluginName, commandName, func);
+        }
+    };
+
+    //=============================================================================
+    // pluginCommand
+    //=============================================================================
+    pluginRegisterCommand('PlayBgmNotLoop', function(args) {
+        const setting = {name: args.FilePath, volume: args.Volume, pitch: args.Pitch, pan: args.Pan};
+        AudioManager.playBgmNotLoop(setting);
     });
-    PluginManagerEx.registerCommand(script, 'SetBgmLoop', function(args) {
+
+    pluginRegisterCommand('SetBgmLoop', function(args) {
         AudioManager.setBgmLoop(args.Loop);
     });
+    
+
     //=============================================================================
-    // ループなしBGM再生
+    // playBgmNotLoop
     //=============================================================================
     const _AudioManager_playBgm = AudioManager.playBgm;
     AudioManager.playBgm = function(bgm, pos) {
+        console.log($gameSwitches.value(param.NotLoopSwitch));
         if(!$gameSwitches.value(param.NotLoopSwitch)){
             _AudioManager_playBgm.apply(this, arguments);
         }else{
@@ -152,7 +253,7 @@
         this._currentBgm.notloop = !!bgm.notloop;
     };
     //=============================================================================
-    // 現在のBGMのループ仕様を変更する（BGM鳴らしてすぐだと反映されない）
+    // setBgmLoop
     //=============================================================================
     AudioManager.setBgmLoop = function(loop) {
         const bgm = this._bgmBuffer;
@@ -170,7 +271,6 @@
         }
     };
 
-    //シーク（ループ有無考慮）
     WebAudio.prototype.seek_loopConsideration = function() {
         if (WebAudio._context) {
             let pos = (WebAudio._currentTime() - this._startTime) * this._pitch;
