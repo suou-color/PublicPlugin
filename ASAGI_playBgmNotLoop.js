@@ -5,6 +5,7 @@
 /*:ja
  * @target MZ
  * @plugindesc ループなしBGM演奏プラグイン
+ * @base PluginCommonBase
  * @orderAfter PluginCommonBase
  * @author あさぎすおう
  * @url https://note.com/suou_color
@@ -12,6 +13,9 @@
  * @help ASAGI_playBgmNotLoop.js
  * Ver : 1.00
  * License : MIT license
+ * 
+ * 現在このプラグインを使用するにはトリアコンタン様のベースプラグイン『PluginCommonBase.js』が
+ * 必要となります。将来的には独立でも使用できるよう目指しています。
  * 
  * BGMをループなし指定で演奏できるプラグインです。
  * 方法は以下の２つです。
@@ -96,12 +100,16 @@
 /*:
  * @target MZ
  * @plugindesc No-Loop BGM Plugin
+ * @base PluginCommonBase
  * @orderAfter PluginCommonBase
  * @author Asagi Suou
  *
  * @help ASAGI_playBgmNotLoop.js
  * Ver : 1.00
  * License : MIT license
+ * 
+ * Currently, this plugin requires triacontane's base plugin "PluginCommonBase.js", to function.
+ * We are working towards making it usable independently in the future.
  * 
  * This plugin allows you to play BGM without looping.
  * There are two methods:
@@ -184,13 +192,18 @@
     //=============================================================================
     // definition
     //=============================================================================
-    const param = includesBase ? PluginManagerEx.createParameter(script) : PluginManager.parameters(pluginName);
+    // const param = includesBase ? PluginManagerEx.createParameter(script) : PluginManager.parameters(pluginName);
+    // const pluginRegisterCommand = function(commandName, func){
+    //     if(includesBase){
+    //         PluginManagerEx.registerCommand(script, commandName, func);
+    //     }else{
+    //         PluginManager.registerCommand(pluginName, commandName, func);
+    //     }
+    // };
+
+    const param = PluginManagerEx.createParameter(script);
     const pluginRegisterCommand = function(commandName, func){
-        if(includesBase){
-            PluginManagerEx.registerCommand(script, commandName, func);
-        }else if(PluginManager.registerCommand){
-            PluginManager.registerCommand(pluginName, commandName, func);
-        }
+        PluginManagerEx.registerCommand(script, commandName, func);
     };
 
     //=============================================================================
@@ -256,6 +269,7 @@
     // setBgmLoop
     //=============================================================================
     AudioManager.setBgmLoop = function(loop) {
+        console.log(loop);
         const bgm = this._bgmBuffer;
         if(bgm && bgm._loop != loop){
             const pos = bgm.seek_loopConsideration();
