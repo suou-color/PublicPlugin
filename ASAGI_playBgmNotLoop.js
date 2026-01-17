@@ -269,7 +269,6 @@
     // setBgmLoop
     //=============================================================================
     AudioManager.setBgmLoop = function(loop) {
-        console.log(loop);
         const bgm = this._bgmBuffer;
         if(bgm && bgm._loop != loop){
             const pos = bgm.seek_loopConsideration();
