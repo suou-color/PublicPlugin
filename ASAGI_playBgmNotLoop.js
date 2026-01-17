@@ -7,6 +7,7 @@
  * @plugindesc ループなしBGM演奏プラグイン
  * @orderAfter PluginCommonBase
  * @author あさぎすおう
+ * @url https://note.com/suou_color
  *
  * @help ASAGI_playBgmNotLoop.js
  * Ver : 1.00
