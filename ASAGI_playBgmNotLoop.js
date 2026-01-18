@@ -1,21 +1,18 @@
 /*
  Version
- 1.00 2026/01/17 初版作成
+ 1.01 2026/01/17 初版作成
+ 1.01 2026/01/18 単独で動作するよう改修
  */
 /*:ja
  * @target MZ
  * @plugindesc ループなしBGM演奏プラグイン
- * @base PluginCommonBase
  * @orderAfter PluginCommonBase
  * @author あさぎすおう
  * @url https://note.com/suou_color
  *
  * @help ASAGI_playBgmNotLoop.js
- * Ver : 1.00
+ * Ver : 1.01
  * License : MIT license
- * 
- * 現在このプラグインを使用するにはトリアコンタン様のベースプラグイン『PluginCommonBase.js』が
- * 必要となります。将来的には独立でも使用できるよう目指しています。
  * 
  * BGMをループなし指定で演奏できるプラグインです。
  * 方法は以下の２つです。
@@ -36,18 +33,6 @@
  * 
  * 【補足】
  * トリアコンタン様のベースプラグイン『PluginCommonBase.js』があると"\V[1]"などの変数が使えます。
- * 
- * @param NotLoopSwitch
- * @text ループなしBGMスイッチ
- * @desc このスイッチがONのときにBGMを演奏すると、そのBGMはループしません。
- * @type switch
- * @default 0
- * 
- * @param SettingToResetNotLoopSwitch
- * @text スイッチのリセット設定
- * @desc この設定をONにすると、BGM演奏実行後に『ループなしBGMスイッチ』を自動でOFFにします。
- * @type boolean
- * @default false
  * 
  * @command PlayBgmNotLoop
  * @text ループなしBGM演奏
@@ -96,20 +81,29 @@
  * @default true
  * @on ループあり
  * @off ループなし
+ * 
+ * @param NotLoopSwitch
+ * @text ループなしBGMスイッチ
+ * @desc このスイッチがONのときにBGMを演奏すると、そのBGMはループしません。
+ * @type switch
+ * @default 0
+ * 
+ * @param SettingToResetNotLoopSwitch
+ * @text スイッチのリセット設定
+ * @desc この設定をONにすると、BGM演奏実行後に『ループなしBGMスイッチ』を自動でOFFにします。
+ * @type boolean
+ * @default false
  */
 /*:
  * @target MZ
  * @plugindesc No-Loop BGM Plugin
- * @base PluginCommonBase
  * @orderAfter PluginCommonBase
  * @author Asagi Suou
+ * @url https://note.com/suou_color
  *
  * @help ASAGI_playBgmNotLoop.js
- * Ver : 1.00
+ * Ver : 1.01
  * License : MIT license
- * 
- * Currently, this plugin requires triacontane's base plugin "PluginCommonBase.js", to function.
- * We are working towards making it usable independently in the future.
  * 
  * This plugin allows you to play BGM without looping.
  * There are two methods:
@@ -130,18 +124,6 @@
  * 
  * 【Memo】
  * If you have triacontane's base plugin "PluginCommonBase.js", variables like '\V[1]' can be used.
- * 
- * @param NotLoopSwitch
- * @text No-Loop BGM Switch
- * @desc After turning this switch ON, the BGM will not loop when played.
- * @type switch
- * @default 0
- * 
- * @param SettingToResetNotLoopSwitch
- * @text No-Loop Switch Reset Setting
- * @desc ‘No-Loop BGM Switch’ will automatically turn OFF after BGM starting playback.
- * @type boolean
- * @default false
  * 
  * @command PlayBgmNotLoop
  * @text No-Loop BGM Play
@@ -182,28 +164,62 @@
  * @default true
  * @on Loop
  * @off No-Loop
+ * 
+ * @param NotLoopSwitch
+ * @text No-Loop BGM Switch
+ * @desc After turning this switch ON, the BGM will not loop when played.
+ * @type switch
+ * @default 0
+ * 
+ * @param SettingToResetNotLoopSwitch
+ * @text No-Loop Switch Reset Setting
+ * @desc ‘No-Loop BGM Switch’ will automatically turn OFF after BGM starting playback.
+ * @type boolean
+ * @default false
  */
 (() => {
     'use strict';
     const pluginName = "ASAGI_playBgmNotLoop";
-    const includesBase = PluginManager._scripts.includes("PluginCommonBase");
+    const includesBasePlugin = PluginManager._scripts.includes("PluginCommonBase");
     const script = document.currentScript;
 
     //=============================================================================
     // definition
     //=============================================================================
-    // const param = includesBase ? PluginManagerEx.createParameter(script) : PluginManager.parameters(pluginName);
-    // const pluginRegisterCommand = function(commandName, func){
-    //     if(includesBase){
-    //         PluginManagerEx.registerCommand(script, commandName, func);
-    //     }else{
-    //         PluginManager.registerCommand(pluginName, commandName, func);
-    //     }
-    // };
+    const convertObject = function(obj){
+        for(let key of Object.keys(obj)){
+            const item = obj[key];
+            if(item === String(item)){
+                obj[key] = convertVariables(item);
+            }else{
+                convertObject(item);
+            }
+        };
+        return obj;
+    };
 
-    const param = PluginManagerEx.createParameter(script);
+    const convertVariables = function(text) {
+        if (text === 'true') {
+            return true;
+        } else if (text === 'false') {
+            return false;
+        } else if (Number(text) === parseFloat(text)) {
+            return parseFloat(text);
+        } else {
+            return text;
+        }
+    }
+
+    const param = includesBasePlugin ? PluginManagerEx.createParameter(script) : convertObject(PluginManager.parameters(pluginName));
+
     const pluginRegisterCommand = function(commandName, func){
-        PluginManagerEx.registerCommand(script, commandName, func);
+        if(includesBasePlugin){
+            PluginManagerEx.registerCommand(script, commandName, func);
+        }else if(PluginManager.registerCommand){
+            PluginManager.registerCommand(pluginName, commandName, function(args) {
+                func.call(this, convertObject(args));
+            });
+        }
     };
 
     //=============================================================================
@@ -217,7 +233,6 @@
     pluginRegisterCommand('SetBgmLoop', function(args) {
         AudioManager.setBgmLoop(args.Loop);
     });
-    
 
     //=============================================================================
     // playBgmNotLoop
