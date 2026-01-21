@@ -1,7 +1,8 @@
 /*
  Version
- 1.01 2026/01/17 初版作成
+ 1.02 2026/01/21 BGMの再開時、ループありなしはスイッチではなく保存内容に依存するように変更
  1.01 2026/01/18 単独で動作するよう改修
+ 1.00 2026/01/17 初版作成
  */
 /*:ja
  * @target MZ
@@ -11,7 +12,7 @@
  * @url https://note.com/suou_color
  *
  * @help ASAGI_playBgmNotLoop.js
- * Ver : 1.01
+ * Ver : 1.02
  * License : MIT license
  * 
  * BGMをループなし指定で演奏できるプラグインです。
@@ -102,7 +103,7 @@
  * @url https://note.com/suou_color
  *
  * @help ASAGI_playBgmNotLoop.js
- * Ver : 1.01
+ * Ver : 1.02
  * License : MIT license
  * 
  * This plugin allows you to play BGM without looping.
@@ -239,7 +240,14 @@
     //=============================================================================
     const _AudioManager_playBgm = AudioManager.playBgm;
     AudioManager.playBgm = function(bgm, pos) {
-        if(!$gameSwitches.value(param.NotLoopSwitch)){
+        let playNotLoop;
+        if(bgm.replayNotLoop != null){
+            playNotLoop = bgm.replayNotLoop;
+        }else{
+            playNotLoop = $gameSwitches.value(param.NotLoopSwitch);
+        }
+
+        if(!playNotLoop){
             _AudioManager_playBgm.apply(this, arguments);
         }else{
             this.playBgmNotLoop(bgm, pos);
@@ -261,7 +269,9 @@
             }
         }
         this.updateCurrentBgm(bgm, pos);
-        this._bgmBuffer.addStopListener(this.stopBgm.bind(this));
+        if(this._bgmBuffer){
+            this._bgmBuffer.addStopListener(this.stopBgm.bind(this));
+        }
         if(param.SettingToResetNotLoopSwitch){
             $gameSwitches.setValue(param.NotLoopSwitch, false);
         }
@@ -280,6 +290,28 @@
         _AudioManager_updateCurrentBgm.apply(this, arguments);
         this._currentBgm.notloop = !!bgm.notloop;
     };
+    
+    //=============================================================================
+    // replayBgm
+    //=============================================================================
+    const _AudioManager_replayBgm = AudioManager.replayBgm;
+    AudioManager.replayBgm = function(bgm) {
+        if (!this.isCurrentBgm(bgm)) {
+            bgm.replayNotLoop = bgm.notloop;
+        }
+        _AudioManager_replayBgm.call(this, bgm);
+        delete bgm.replayNotLoop;
+    };
+
+    const _AudioManager_saveBgm = AudioManager.saveBgm;
+    AudioManager.saveBgm = function() {
+        const bgm = _AudioManager_saveBgm.apply(this, arguments);
+        if (this._currentBgm) {
+            bgm.notloop = this._currentBgm.notloop;
+        }
+        return bgm;
+    };
+    
     //=============================================================================
     // setBgmLoop
     //=============================================================================
