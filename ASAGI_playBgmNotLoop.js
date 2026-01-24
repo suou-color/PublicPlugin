@@ -1,5 +1,6 @@
 /*
  Version
+ 1.03 2026/01/24 convertObject修正
  1.02 2026/01/21 BGMの再開時、ループありなしはスイッチではなく保存内容に依存するように変更
  1.01 2026/01/18 単独で動作するよう改修
  1.00 2026/01/17 初版作成
@@ -12,7 +13,7 @@
  * @url https://note.com/suou_color
  *
  * @help ASAGI_playBgmNotLoop.js
- * Ver : 1.02
+ * Ver : 1.03
  * License : MIT license
  * 
  * BGMをループなし指定で演奏できるプラグインです。
@@ -103,7 +104,7 @@
  * @url https://note.com/suou_color
  *
  * @help ASAGI_playBgmNotLoop.js
- * Ver : 1.02
+ * Ver : 1.03
  * License : MIT license
  * 
  * This plugin allows you to play BGM without looping.
@@ -190,11 +191,7 @@
     const convertObject = function(obj){
         for(let key of Object.keys(obj)){
             const item = obj[key];
-            if(item === String(item)){
-                obj[key] = convertVariables(item);
-            }else{
-                convertObject(item);
-            }
+            obj[key] = convertVariables(item);
         };
         return obj;
     };

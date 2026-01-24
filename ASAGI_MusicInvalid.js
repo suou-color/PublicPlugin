@@ -1,5 +1,6 @@
 /*
  Version
+ 1.01 2026/01/24 convertObject修正
  1.00 2026/01/20 初版作成
  */
 /*:ja
@@ -11,7 +12,7 @@
  * @url https://note.com/suou_color
  *
  * @help ASAGI_MusicInvalid.js
- * Ver : 1.00
+ * Ver : 1.01
  * License : MIT license
  * 
  * BGM, BGS, ME, SE, システムサウンド(※1)の演奏を無効にするスイッチをそれぞれ作成できます。
@@ -73,11 +74,7 @@
     const convertObject = function(obj){
         for(let key of Object.keys(obj)){
             const item = obj[key];
-            if(item === String(item)){
-                obj[key] = convertVariables(item);
-            }else{
-                convertObject(item);
-            }
+            obj[key] = convertVariables(item);
         };
         return obj;
     };

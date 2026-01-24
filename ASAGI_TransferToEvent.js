@@ -1,5 +1,6 @@
 /*
  Version
+ 1.01 2026/01/24 convertObject修正
  1.00 2026/01/18 初版作成
  */
 /*:ja
@@ -10,7 +11,7 @@
  * @url https://note.com/suou_color
  *
  * @help ASAGI_TransferToEvent.js
- * Ver : 1.00
+ * Ver : 1.01
  * License : MIT license
  * 
  * 指定したイベント位置を基準とした相対座標へ場所移動できるプラグインです。
@@ -116,11 +117,7 @@
     const convertObject = function(obj){
         for(let key of Object.keys(obj)){
             const item = obj[key];
-            if(item === String(item)){
-                obj[key] = convertVariables(item);
-            }else{
-                convertObject(item);
-            }
+            obj[key] = convertVariables(item);
         };
         return obj;
     };
