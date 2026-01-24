@@ -268,8 +268,6 @@
     const _Game_Switches_initialize    = Game_Switches.prototype.initialize;
     Game_Switches.prototype.initialize = function() {
         _Game_Switches_initialize.apply(this, arguments);
-        
-        console.log(singleONGroup);
         this.setStartONSwitches();
     };
 
@@ -385,6 +383,21 @@
                 }
             }
         }
+    };
+    //=============================================================================
+    // getSingleONGroups
+    //=============================================================================
+    Game_Switches.prototype.getSingleONGroup = function(groupName) {
+        if(groupName !== ""){
+            return singleONGroup.filter(group => group.groupName === groupName);
+        }
+        return [];
+    };
+    Game_SelfSwitches.prototype.getSingleONSSGroup = function(groupName) {
+        if(groupName !== ""){
+            return singleONSSGroup.filter(group => group.groupName === groupName);
+        }
+        return [];
     };
 
 })();
